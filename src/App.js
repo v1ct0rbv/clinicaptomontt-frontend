@@ -1,24 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import React,{useEffect, Fragment} from 'react'
+import {Switch,Route} from 'react-router-dom'
+import { ToastContainer} from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import Spinner from './img/loader2.gif'
 
-function App() {
+
+import {auth} from './firebase'
+import {useDispatch} from 'react-redux'
+
+//using lazy
+import Home from './pages/Home'
+import Header from './components/nav/Header'
+import Login from './pages/auth/Login'
+
+
+
+
+
+
+const App = () => {
+
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if(user){
+        const idTokenResult = await user.getIdTokenResult()
+
+        dispatch({
+          type:'LOGGED_IN_USER',
+          payload:{
+            email:'',
+            token:idTokenResult,
+          }
+        })
+      }
+    }) 
+
+    return () => unsubscribe()
+  },[])
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Fragment>
+    <Header />
+    <ToastContainer/>
+    <Switch>
+      <Route exact path='/' component={Login} />
+      <Route exact path="/agenda" component={Home} />
+    </Switch>
+    </Fragment>
   );
 }
 
